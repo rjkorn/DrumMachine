@@ -22,7 +22,16 @@ M5Canvas displ(&M5.Display);
 M5Canvas bmpSpr(&M5.Display);
 M5Canvas metSpr(&M5.Display);
 
+const int mrx = 17;   // Midi RX 54
+const int mtx = 16;   // Midi TX 53
+
+const int chn = 9;   // Main Channel 0-9
+
+const int mchn = 9;  // Metronome Channel
+const int mpch = 62; // Metronome Note
+
 const int drumNotes[] = {35, 38, 37, 59, 61};
+
 String instruments[5]= {
   "Bass Drum",  // 35
   "Snare",      // 38
@@ -77,7 +86,7 @@ unsigned short background=0x10E4;
 unsigned short backgroundInst=0x32EE;
 unsigned short playCol=0x322A;
 unsigned short metCol=0x1225;
-bool metronome=1;
+bool metronome=0;
 
 void setup() {
 
@@ -128,8 +137,8 @@ void setup() {
 
     Serial.begin(115200);
     Serial.println("Unit Synth Piano");
-    synth.begin(&Serial2, UNIT_SYNTH_BAUD, 54, 53);
-    synth.setInstrument(0, 9, SynthDrum);  // synth piano 1
+    synth.begin(&Serial2, UNIT_SYNTH_BAUD, mrx, mtx); 
+    synth.setInstrument(0, chn, SynthDrum);  // synth piano 1
 
 
     for(int j=0;j<5;j++)
@@ -160,7 +169,7 @@ void setup() {
     M5.Display.setTextColor(WHITE,RED);
     M5.Display.drawString(" VOLOS PROJECTS 2025 ",126,710);
     M5.Display.unloadFont();
-     M5.Display.loadFont(tinyFont);
+    M5.Display.loadFont(tinyFont);
     M5.Display.setTextColor(b1,backgroundInst);
     M5.Display.drawString("INSTRUMENTS",150,130);
     M5.Display.unloadFont();
@@ -182,14 +191,17 @@ void setup() {
 void drawMet()
 {
      metSpr.fillSprite(background);
-     metSpr.fillRoundRect(0,0,280,70,6,0x59A1);
+     metSpr.fillRoundRect(0,0,280,70,6,b3);
      metSpr.loadFont(tinyFont);
      metSpr.setTextDatum(5);
-     metSpr.setTextColor(WHITE,0x59A1);
-     if(metronome)
-     metSpr.drawString("METRONOME OFF",140,35);
-     else
-     metSpr.drawString("METRONOME ON",140,35);
+     if(metronome){
+       metSpr.setTextColor(CYAN,b3);
+       metSpr.drawString("METRONOME ON",140,35);
+     } else {
+       metSpr.setTextColor(ORANGE,b3);
+       metSpr.drawString("METRONOME OFF",140,35);
+     }
+     metSpr.setTextColor(WHITE,b3);
      metSpr.pushSprite(760,18);
 }
 
@@ -392,32 +404,32 @@ void loop() {
     n++; if(n==16) n=0;
 
     if(notePlayed[0][n]==1){
-    synth.setNoteOn(9, drumNotes[0], 100);
+    synth.setNoteOn(chn, drumNotes[0], 100);
     drawBlink(0,1);
     }
 
     if(notePlayed[1][n]==1)
-    {synth.setNoteOn(9, drumNotes[1],100);
+    {synth.setNoteOn(chn, drumNotes[1],100);
     drawBlink(1,1);
     }
 
     if(notePlayed[2][n]==1){
-      synth.setNoteOn(9, drumNotes[2], 100);
+      synth.setNoteOn(chn, drumNotes[2], 100);
       drawBlink(2,1);
     }
     
     if(notePlayed[3][n]==1)
-    {synth.setNoteOn(9, drumNotes[3], 100);
+    {synth.setNoteOn(chn, drumNotes[3], 100);
     drawBlink(3,1);
     }
 
     if(notePlayed[4][n]==1){
-    synth.setNoteOn(9, drumNotes[4],100);
+    synth.setNoteOn(chn, drumNotes[4],100);
     drawBlink(4,1);
     }
 
     if(metronome && n%4==0)
-    synth.setNoteOn(9, 62, 90);
+    synth.setNoteOn(mchn, mpch, 90);
     draw2();
     drawDisplay();
  }
